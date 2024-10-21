@@ -50,3 +50,13 @@ class ProfilePicture(models.Model):
     profile_pic = models.ImageField(upload_to='Profile pictures')
     class Meta:
         db_table = 'profile_pic'
+
+class UserTask(models.Model):
+    user = models.ForeignKey(Users, related_name='task', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, blank=False, null=False)
+    todo = models.TextField()
+    date_created = models.DateField(auto_now_add=True)
+    last_edit = models.DateTimeField( auto_now=True)
+    
+    class Meta:
+        db_table = 'todo'

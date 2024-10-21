@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, ProfilePicture
+from .models import UserTask, Users, ProfilePicture
 from django.core.files import File
 import os
 from django.conf import settings
@@ -75,3 +75,11 @@ class ViewUserSerializer(serializers.ModelSerializer):
     def get_date_joined(self, obj):
         date = obj.date_joined.strftime('%B, %Y') if obj.date_joined else None
         return date
+
+class UserTaskSerializer(serializers.ModelSerializer):
+    # date_created = serializers.DateTimeField(write_only=True)
+    # last_edit = serializers.DateTimeField(write_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    class Meta:
+        model = UserTask
+        fields = ['title','todo', 'user']
