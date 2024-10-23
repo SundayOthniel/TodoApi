@@ -193,3 +193,4 @@ class DeleteTask(generics.GenericAPIView, mixins.DestroyModelMixin):
 
 # AdminView or UserView
 
+class
