@@ -190,7 +190,3 @@ class DeleteTask(generics.GenericAPIView, mixins.DestroyModelMixin):
             return task
         except UserTask.DoesNotExist:
             raise NotFound({"Error": "Task not found"})
-
-# AdminView or UserView
-class UpdateProfile(generics.GenericAPIView, mixins.UpdateModelMixin):
-    pass
