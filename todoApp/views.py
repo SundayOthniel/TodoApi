@@ -14,26 +14,29 @@ from rest_framework import authentication
 
 @api_view(http_method_names=['GET'])
 def index(request, format=None):
-    user = Users.objects.first()
-    task = UserTask.objects.filter(user=request.user).first()
-    response_url = ({
-        'create_user': reverse('create_user', request=request, format=format),
-        'list_users': reverse('list_user', request=request, format=format),
-        'create_task': reverse('create_task', request=request, format=format),
-        'view_task': reverse('view_task', request=request, format=format),
-    })
-    if user:
-        response_url['view_user'] = reverse(
-            'view_user', kwargs={'pk': user.pk}, request=request, format=format)
-        response_url['delete_user'] = reverse(
-            'delete_user', kwargs={'pk': user.pk}, request=request, format=format)
-    if task:
-        response_url['delete_task'] = reverse(
-            'delete_task', kwargs={'pk': task.pk}, request=request, format=format)
-    elif not task.exists():
-        return Response({"Error": "Task dont exist"}, status=status.HTTP_404_NOT_FOUND)
-
-    return Response(response_url)
+    
+    if request.user.is_authenticated:
+        response_url = ({
+            'create_user': reverse('create_user', request=request, format=format),
+            'list_users': reverse('list_user', request=request, format=format),
+            'create_task': reverse('create_task', request=request, format=format),
+            'view_task': reverse('view_task', request=request, format=format),
+        })
+        task = UserTask.objects.filter(user=request.user).first()
+        user = Users.objects.first()
+        if user:
+            response_url['view_user'] = reverse(
+                'view_user', kwargs={'pk': user.pk}, request=request, format=format)
+            response_url['delete_user'] = reverse(
+                'delete_user', kwargs={'pk': user.pk}, request=request, format=format)
+        if task:
+            response_url['delete_task'] = reverse(
+                'delete_task', kwargs={'pk': task.pk}, request=request, format=format)
+        return Response(response_url)
+    else:
+        response_url = ({
+            'create_user': reverse('create_user', request=request, format=format) })
+        return Response(response_url)
 
 
 # AdminView
@@ -123,8 +126,8 @@ class CreateTask(generics.GenericAPIView, mixins.CreateModelMixin):
     authentication_classes = [authentication.BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, request, serializer):
-        serializer.save(request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -188,4 +191,5 @@ class DeleteTask(generics.GenericAPIView, mixins.DestroyModelMixin):
         except UserTask.DoesNotExist:
             raise NotFound({"Error": "Task not found"})
 
-# UserView only
+# AdminView or UserView
+
