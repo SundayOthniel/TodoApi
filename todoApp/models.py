@@ -37,6 +37,7 @@ class Users(AbstractBaseUser):
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    last_login = models.DateTimeField(auto_now=True, blank=True, null=True)
     username = None
 
     objects = UserManager()

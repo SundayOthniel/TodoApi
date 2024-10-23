@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import api_view
-from .serializers import UserTaskSerializer, UsersSerializer, ViewTaskSerializers, ViewUserSerializer
+from .serializers import UpdateProfileSerializer, UserTaskSerializer, UsersSerializer, ViewTaskSerializers, ViewUserSerializer
 from rest_framework import generics, mixins
 from rest_framework.response import Response
 from .models import UserTask, Users
@@ -21,6 +21,7 @@ def index(request, format=None):
             'list_users': reverse('list_user', request=request, format=format),
             'create_task': reverse('create_task', request=request, format=format),
             'view_task': reverse('view_task', request=request, format=format),
+            'update_profile': reverse('update_profile', request=request, format=format),
         })
         task = UserTask.objects.filter(user=request.user).first()
         user = Users.objects.first()
@@ -190,3 +191,23 @@ class DeleteTask(generics.GenericAPIView, mixins.DestroyModelMixin):
             return task
         except UserTask.DoesNotExist:
             raise NotFound({"Error": "Task not found"})
+
+# AdminView or UserView
+class UpdateProfile(generics.GenericAPIView, mixins.UpdateModelMixin):
+    serializer_class = UpdateProfileSerializer
+    lookup_field = 'pk'
+    
+    def get(self, request, *args, **kwargs):
+        user = self.get_object()  # Get the current user
+        serializer = self.get_serializer(user)  # Serialize the user data
+        return Response(serializer.data) 
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+    
+    def get_object(self):
+        return self.request.user
+    

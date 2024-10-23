@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserTask, Users, ProfilePicture
+from todoApp.models import UserTask, Users, ProfilePicture
 from django.core.files import File
 import os
 from django.conf import settings
@@ -109,4 +109,24 @@ class ViewTaskSerializers(serializers.ModelSerializer):
         return obj.date_created.strftime('%Y-%m-%d %H:%M:%S') if obj.date_created else None
 
     def get_last_edit(self, obj):
-        return obj.last_edit.strftime('%Y-%m-%d %H:%M:%S') if obj.last_edit else None
+        return obj.last_edit.strftime('%Y-%m-%d %H:%M') if obj.last_edit else None
+    
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.ImageField(required=False)
+    class Meta:
+        model = Users
+        fields = ['phone', 'first_name', 'last_name', 'email', 'profile_pic']
+    
+    def update(self, instance, validated_data):
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        
+        profile_pic = validated_data.get('profile_pic')
+        if profile_pic:
+            profile_picture, create = ProfilePicture.objects.get_or_create(user=instance)
+            profile_picture.profile_pic = profile_pic
+            profile_picture.save()
+        return instance
